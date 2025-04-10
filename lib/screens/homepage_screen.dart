@@ -81,39 +81,37 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _scheduleNotification() async {
     DateTime lastWaterIntake = waterEntries.last.createDateTime;
-    DateTime scheduledTime = lastWaterIntake.add(const Duration(/*hours: 3*/ minutes: 1));
+    DateTime scheduledTime = lastWaterIntake.add(const Duration(hours: 3));
     final now = DateTime.now();
 
-    if (scheduledTime.isBefore(now)) {
-      scheduledTime = now.add(const Duration(seconds: 10));
-    }
-
-    if (scheduledTime.hour >= 23 || scheduledTime.hour < 7) {
-      if (scheduledTime.hour >= 23) {
-        scheduledTime = DateTime(scheduledTime.year, scheduledTime.month, scheduledTime.day).add(const Duration(days: 1, hours: 7));
-      } else if (scheduledTime.hour < 7) {
-        scheduledTime = DateTime(scheduledTime.year, scheduledTime.month, scheduledTime.day, 7);
+    if (scheduledTime.isAfter(now)) {
+      if (scheduledTime.hour >= 23 || scheduledTime.hour < 7) {
+        if (scheduledTime.hour >= 23) {
+          scheduledTime = DateTime(scheduledTime.year, scheduledTime.month, scheduledTime.day).add(const Duration(days: 1, hours: 7));
+        } else if (scheduledTime.hour < 7) {
+          scheduledTime = DateTime(scheduledTime.year, scheduledTime.month, scheduledTime.day, 7);
+        }
       }
+
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'water_notification_channel',
+        'Water Notifications',
+        channelDescription: 'Notification to remind you to drink water',
+        importance: Importance.max,
+        priority: Priority.high,
+      );
+      const NotificationDetails notificationDetails = NotificationDetails(android: androidDetails);
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        0,
+        'Hydration Reminder',
+        'It’s time to drink water!',
+        tz.TZDateTime.from(scheduledTime, tz.local),
+        notificationDetails,
+        matchDateTimeComponents: null,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
     }
-
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'water_notification_channel',
-      'Water Notifications',
-      channelDescription: 'Notification to remind you to drink water',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const NotificationDetails notificationDetails = NotificationDetails(android: androidDetails);
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0,
-      'Hydration Reminder',
-      'It’s time to drink water!',
-      tz.TZDateTime.from(scheduledTime, tz.local),
-      notificationDetails,
-      matchDateTimeComponents: null,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
   }
 
   @override
