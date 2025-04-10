@@ -1,0 +1,1 @@
+C:\Users\simon\AndroidStudioProjects\hydration\build\app\intermediates\cxx\Debug\1y3d521h\obj\arm64-v8a
